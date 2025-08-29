@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartFood </title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --glow: 0 0 25px rgba(168, 85, 247, 0.5), 0 0 45px rgba(59, 130, 246, 0.35); }
+    .glass { backdrop-filter: blur(10px); background: rgba(255,255,255,0.06); }
+    .neon { box-shadow: var(--glow); }
+    .btn-primary { background: linear-gradient(90deg, #7c3aed, #2563eb); }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .card { transition: transform .15s ease, box-shadow .2s ease; }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--glow); }
+    .selected { outline: 3px solid rgba(168,85,247,.9); box-shadow: var(--glow); }
+    .step-indicator .dot { width: 10px; height: 10px; border-radius: 9999px; background: rgba(255,255,255,.25); }
+    .step-indicator .active { background: linear-gradient(90deg, #7c3aed, #2563eb); box-shadow: var(--glow); }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-black via-indigo-950 to-purple-950 text-white">
+  <header class="max-w-5xl mx-auto px-4 py-8 text-center">
+    <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 drop-shadow">🌌 SmartFood — Asistente de Pedido</h1>
+    <p class="text-sm text-purple-200/80 mt-2">Restaurante inteligente</p>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-4 pb-20">
+    <div class="step-indicator flex items-center justify-center gap-2 mb-6">
+      <div class="dot active" id="dot-0"></div>
+      <div class="dot" id="dot-1"></div>
+      <div class="dot" id="dot-2"></div>
+      <div class="dot" id="dot-3"></div>
+      <div class="dot" id="dot-4"></div>
+      <div class="dot" id="dot-5"></div>
+      <div class="dot" id="dot-6"></div>
+      <div class="dot" id="dot-7"></div>
+    </div>
+
+    <section id="step-0" class="glass rounded-2xl p-6 neon">
+      <h2 class="text-2xl font-bold text-purple-200 mb-2">Bienvenido a SmartFood - Restaurante Inteligente</h2>
+      <p class="text-purple-100/80 mb-4">Por favor, ingrese su nombre:</p>
+      <input id="nombre" class="w-full px-4 py-3 rounded-xl bg-white/10 placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Tu nombre...">
+      <div class="mt-5 flex justify-end">
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="nextStep()">Continuar</button>
+      </div>
+    </section>
+
+    <section id="step-1" class="glass rounded-2xl p-6 mt-6 hidden">
+      <h2 class="text-xl font-bold text-purple-200 mb-2">Hola <span id="nombrePreview"></span>, ¿Desea saber sobre nuestros COMBOS?</h2>
+      <div class="flex gap-3">
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="setCombosSi()">Sí</button>
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="setCombosNo()">No</button>
+      </div>
+    </section>
+
+    <section id="step-2" class="glass rounded-2xl p-6 mt-6 hidden">
+      <h2 class="text-xl font-bold text-purple-200 mb-3">Estos son nuestros COMBOS (elige uno y cantidad)</h2>
+      <div id="combosList" class="grid gap-3"></div>
+      <div class="mt-4">
+        <label class="block text-sm text-purple-100/90 mb-1">¿Qué cantidad de combos desea?</label>
+        <input id="cantc" type="number" min="1" value="1" class="w-32 px-3 py-2 rounded-lg bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500">
+      </div>
+      <div class="mt-5 flex justify-between">
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="prevStep()">Atrás</button>
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="nextStep()">Continuar</button>
+      </div>
+    </section>
+
+    <section id="step-3" class="glass rounded-2xl p-6 mt-6 hidden">
+      <h2 class="text-xl font-bold text-purple-200 mb-2">¿Desea una ENTRADA?</h2>
+      <div class="flex gap-3">
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="setEntradasSi()">Sí</button>
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="setEntradasNo()">No</button>
+      </div>
+      <div id="entradasBox" class="mt-5 hidden">
+        <p class="text-purple-100/80 mb-3">Elija una entrada:</p>
+        <div id="entradasList" class="grid gap-3"></div>
+      </div>
+      <div class="mt-5 flex justify-between">
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="prevStep()">Atrás</button>
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="nextStep()">Continuar</button>
+      </div>
+    </section>
+
+    <section id="step-4" class="glass rounded-2xl p-6 mt-6 hidden">
+      <h2 class="text-xl font-bold text-purple-200 mb-2">¿Desea un PLATO CRIOLLO O MARINO?</h2>
+      <div class="flex gap-3 mb-4">
+        <button id="btnCriollo" class="btn-primary px-4 py-2 rounded-lg font-semibold" onclick="seleccionarTipoPlato('criollo')">Criollo</button>
+        <button id="btnMarino" class="px-4 py-2 rounded-lg font-semibold bg-white/10 hover:bg-white/20" onclick="seleccionarTipoPlato('marino')">Marino</button>
+      </div>
+      <div id="criollosList" class="grid gap-3"></div>
+      <div id="marinosList" class="grid gap-3 hidden"></div>
+      <div class="mt-4">
+        <label class="block text-sm text-purple-100/90 mb-1">¿Qué cantidad de platos desea?</label>
+        <input id="cantPlato" type="number" min="1" value="1" class="w-32 px-3 py-2 rounded-lg bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500">
+      </div>
+      <div class="mt-5 flex justify-between">
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="prevStep()">Atrás</button>
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="nextStep()">Continuar</button>
+      </div>
+    </section>
+
+    <section id="step-5" class="glass rounded-2xl p-6 mt-6 hidden">
+      <h2 class="text-xl font-bold text-purple-200 mb-2">¿Desea un POSTRE CRIOLLO?</h2>
+      <div class="flex gap-3">
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="setPostresSi()">Sí</button>
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="setPostresNo()">No</button>
+      </div>
+      <div id="postresBox" class="mt-5 hidden">
+        <p class="text-purple-100/80 mb-3">Elija su postre:</p>
+        <div id="postresList" class="grid gap-3"></div>
+        <div class="mt-4">
+          <label class="block text-sm text-purple-100/90 mb-1">¿Qué cantidad de postres desea?</label>
+          <input id="cantPostre" type="number" min="1" value="1" class="w-32 px-3 py-2 rounded-lg bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+      </div>
+      <div class="mt-5 flex justify-between">
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="prevStep()">Atrás</button>
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="nextStep()">Continuar</button>
+      </div>
+    </section>
+
+    <section id="step-6" class="glass rounded-2xl p-6 mt-6 hidden">
+      <h2 class="text-xl font-bold text-purple-200 mb-2">¿Desea alguna BEBIDA?</h2>
+      <div class="flex gap-3">
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="setBebidasSi()">Sí</button>
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="setBebidasNo()">No</button>
+      </div>
+      <div id="bebidasBox" class="mt-5 hidden">
+        <p class="text-purple-100/80 mb-3">Elija su bebida:</p>
+        <div id="bebidasList" class="grid gap-3"></div>
+        <div class="mt-4">
+          <label class="block text-sm text-purple-100/90 mb-1">¿Qué cantidad de bebidas desea?</label>
+          <input id="cantBebida" type="number" min="1" value="1" class="w-32 px-3 py-2 rounded-lg bg-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+      </div>
+      <div class="mt-5 flex justify-between">
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="prevStep()">Atrás</button>
+        <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="nextStep()">Continuar</button>
+      </div>
+    </section>
+
+    <section id="step-7" class="glass rounded-2xl p-6 mt-6 hidden">
+      <h2 class="text-2xl font-bold text-purple-200 mb-3">🧾 Resumen del pedido</h2>
+      <div id="resumen" class="space-y-1 text-purple-100/90"></div>
+      <div class="mt-6 flex flex-wrap gap-3 justify-between">
+        <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="prevStep()">Atrás</button>
+        <div class="flex gap-3">
+          <button class="btn-primary px-5 py-3 rounded-xl font-semibold" onclick="generarResumen()">Recalcular</button>
+          <button class="px-5 py-3 rounded-xl font-semibold bg-white/10 hover:bg-white/20" onclick="reiniciar()">Reiniciar</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const data = {
+      combos: [
+        { nombre: 'Combo 1 - Ají Lovers: Ají de Gallina + Chicha Morada + Mazamorra Morada', precio: 21 },
+        { nombre: 'Combo 2 - Cevichero: Ceviche Clásico + Yuca frita + Maracuyá', precio: 28 },
+        { nombre: 'Combo 3 - Brasa: 1/4 Pollo a la Brasa + Papas + Gaseosa 500ml', precio: 20 },
+        { nombre: 'Combo 4 - Anticuchero Criollo: Anticuchos (2) + Papa dorada + Chicha Morada', precio: 16 },
+        { nombre: 'Combo 5 - Seco Tradicional: Seco de Res + Limonada frozen + Arroz con Leche', precio: 24 },
+      ],
+      entradas: [
+        { nombre: 'Anticuchos con Papa y Ají', precio: 18 },
+        { nombre: 'Causa de Atún', precio: 14 },
+        { nombre: 'Causa Limeña de Pollo', precio: 14 },
+        { nombre: 'Humita de Maíz', precio: 9 },
+        { nombre: 'Ocopa Arequipeña', precio: 12 },
+        { nombre: 'Papa a la Huancaína', precio: 12 },
+        { nombre: 'Tamal Criollo', precio: 10 },
+        { nombre: 'Caldo de Gallina', precio: 10 },
+        { nombre: 'Aguadito de Pollo', precio: 10 },
+      ],
+      criollos: [
+        { nombre: 'Lomo Saltado', precio: 22 },
+        { nombre: 'Ají de Gallina', precio: 18 },
+        { nombre: 'Arroz con Pollo', precio: 16 },
+        { nombre: 'Seco de Cabrito con Frejoles', precio: 26 },
+        { nombre: 'Tallarines Verdes con Bistec', precio: 18 },
+        { nombre: 'Tallarines a la Huancaína con Lomo', precio: 20 },
+        { nombre: 'Carapulcra con Sopa Seca', precio: 22 },
+        { nombre: 'Arroz con Pato a la Norteña', precio: 28 },
+        { nombre: 'Chicharrón de Cerdo con Mote y Camote', precio: 20 },
+        { nombre: 'Cau Cau Criollo', precio: 16 },
+      ],
+      marinos: [
+        { nombre: 'Arroz con Mariscos', precio: 24 },
+        { nombre: 'Ceviche Clásico de Pescado', precio: 24 },
+        { nombre: 'Ceviche Mixto', precio: 28 },
+        { nombre: 'Chicharrón de Pescado', precio: 20 },
+        { nombre: 'Jalea de Pescado y Mariscos', precio: 26 },
+      ],
+      postres: [
+        { nombre: 'Mazamorra Morada', precio: 8 },
+        { nombre: 'Arroz con Leche', precio: 8 },
+        { nombre: 'Suspiro a la Limeña', precio: 12 },
+        { nombre: 'Picarones', precio: 10 },
+        { nombre: 'Turrón de Doña Pepa', precio: 12 },
+      ],
+      bebidas: [
+        { nombre: 'Refresco de maracuyá', precio: 6 },
+        { nombre: 'Limonada frozen', precio: 7 },
+        { nombre: 'Refresco de carambola', precio: 6 },
+        { nombre: 'Chicha morada', precio: 6 },
+        { nombre: 'Agua mineral', precio: 4 },
+      ]
+    };
+
+    let step = 0;
+    let estado = {
+      nombre: '',
+      combo: { item: null, cant: 1, precioTotal: 0 },
+      entrada: { item: null, precioTotal: 0 },
+      platoCriollo: { item: null, cant: 1, precioTotal: 0 },
+      platoMarino: { item: null, cant: 1, precioTotal: 0 },
+      postre: { item: null, cant: 1, precioTotal: 0 },
+      bebida: { item: null, cant: 1, precioTotal: 0 },
+      descuento: 0,
+      numeroPedido: 0
+    };
+
+    const qs = s => document.querySelector(s);
+    const qsa = s => Array.from(document.querySelectorAll(s));
+    function showStep(i) {
+      step = i;
+      for (let k=0;k<=7;k++) {
+        const sec = qs('#step-'+k);
+        if (!sec) continue;
+        if (k===i) sec.classList.remove('hidden'); else sec.classList.add('hidden');
+        const dot = qs('#dot-'+k);
+        if (dot) dot.classList.toggle('active', k<=i);
+      }
+      if (i===1) qs('#nombrePreview').textContent = estado.nombre || 'cliente';
+      if (i===7) generarResumen();
+    }
+    function nextStep(){ showStep(Math.min(step+1, 7)); }
+    function prevStep(){ showStep(Math.max(step-1, 0)); }
+
+    function createCard(item, group, onClick) {
+      const div = document.createElement('div');
+      div.className = 'card p-4 rounded-xl bg-white/10 flex items-center justify-between';
+      const left = document.createElement('div');
+      left.innerHTML = `<div>${item.nombre}</div><div class="text-purple-300 font-semibold">S/ ${item.precio}</div>`;
+      const btn = document.createElement('button');
+      btn.className = 'btn-primary px-3 py-2 rounded-lg font-semibold';
+      btn.textContent = 'Elegir';
+      btn.onclick = () => onClick(item, div, group);
+      div.appendChild(left); div.appendChild(btn);
+      return div;
+    }
+    function renderList(id, list, group) {
+      const cont = qs('#'+id); cont.innerHTML = '';
+      list.forEach(it => cont.appendChild(createCard(it, group, handleSelect)));
+    }
+    function clearSelectionVisual(containerId) {
+      qsa('#'+containerId+' > div').forEach(el => el.classList.remove('selected'));
+    }
+    function handleSelect(item, card, group) {
+      if (group === 'combo') { estado.combo.item = item; clearSelectionVisual('combosList'); }
+      if (group === 'entrada') { estado.entrada.item = item; clearSelectionVisual('entradasList'); }
+      if (group === 'criollo') { estado.platoMarino.item = null; estado.platoCriollo.item = item; clearSelectionVisual('criollosList'); }
+      if (group === 'marino') { estado.platoCriollo.item = null; estado.platoMarino.item = item; clearSelectionVisual('marinosList'); }
+      if (group === 'postre') { estado.postre.item = item; clearSelectionVisual('postresList'); }
+      if (group === 'bebida') { estado.bebida.item = item; clearSelectionVisual('bebidasList'); }
+      card.classList.add('selected');
+    }
+
+    function setCombosSi() {
+      renderList('combosList', data.combos, 'combo');
+      showStep(2);
+    }
+    function setCombosNo() {
+      estado.combo = { item: null, cant: 1, precioTotal: 0 };
+      showStep(3);
+    }
+    function setEntradasSi() {
+      qs('#entradasBox').classList.remove('hidden');
+      renderList('entradasList', data.entradas, 'entrada');
+    }
+    function setEntradasNo() {
+      estado.entrada = { item: null, precioTotal: 0 };
+      qs('#entradasBox').classList.add('hidden');
+    }
+
+    function seleccionarTipoPlato(tipo) {
+      if (tipo === 'criollo') {
+        qs('#btnCriollo').className = 'btn-primary px-4 py-2 rounded-lg font-semibold';
+        qs('#btnMarino').className = 'px-4 py-2 rounded-lg font-semibold bg-white/10 hover:bg-white/20';
+        qs('#criollosList').classList.remove('hidden');
+        qs('#marinosList').classList.add('hidden');
+        renderList('criollosList', data.criollos, 'criollo');
+      } else {
+        qs('#btnMarino').className = 'btn-primary px-4 py-2 rounded-lg font-semibold';
+        qs('#btnCriollo').className = 'px-4 py-2 rounded-lg font-semibold bg-white/10 hover:bg-white/20';
+        qs('#marinosList').classList.remove('hidden');
+        qs('#criollosList').classList.add('hidden');
+        renderList('marinosList', data.marinos, 'marino');
+      }
+    }
+
+    function setPostresSi() {
+      qs('#postresBox').classList.remove('hidden');
+      renderList('postresList', data.postres, 'postre');
+    }
+    function setPostresNo() {
+      estado.postre = { item: null, cant: 1, precioTotal: 0 };
+      qs('#postresBox').classList.add('hidden');
+    }
+    function setBebidasSi() {
+      qs('#bebidasBox').classList.remove('hidden');
+      renderList('bebidasList', data.bebidas, 'bebida');
+    }
+    function setBebidasNo() {
+      estado.bebida = { item: null, cant: 1, precioTotal: 0 };
+      qs('#bebidasBox').classList.add('hidden');
+    }
+
+    function generarResumen() {
+      estado.nombre = qs('#nombre').value.trim() || 'Cliente sin nombre';
+      estado.numeroPedido = Math.floor(Math.random()*41) + 10; // 10..50
+
+      estado.combo.cant = Math.max(1, parseInt(qs('#cantc')?.value || '1'));
+      estado.platoCriollo.cant = Math.max(1, parseInt(qs('#cantPlato')?.value || '1'));
+      estado.platoMarino.cant = Math.max(1, parseInt(qs('#cantPlato')?.value || '1'));
+      estado.postre.cant = Math.max(1, parseInt(qs('#cantPostre')?.value || '1'));
+      estado.bebida.cant = Math.max(1, parseInt(qs('#cantBebida')?.value || '1'));
+
+      let total = 0;
+      const parts = [];
+
+      if (estado.combo.item) {
+        estado.combo.precioTotal = estado.combo.item.precio * estado.combo.cant;
+        total += estado.combo.precioTotal;
+        parts.push(`Combo: ${estado.combo.item.nombre} x${estado.combo.cant} - S/ ${estado.combo.precioTotal.toFixed(2)}`);
+      } else {
+        parts.push('Combo: No ordenó - S/ 0.00');
+      }
+
+      if (estado.entrada.item) {
+        estado.entrada.precioTotal = estado.entrada.item.precio;
+        total += estado.entrada.precioTotal;
+        parts.push(`Entrada: ${estado.entrada.item.nombre} - S/ ${estado.entrada.precioTotal.toFixed(2)}`);
+      } else {
+        parts.push('Entrada: No ordenó - S/ 0.00');
+      }
+
+      if (estado.platoCriollo.item) {
+        estado.platoCriollo.precioTotal = estado.platoCriollo.item.precio * estado.platoCriollo.cant;
+        total += estado.platoCriollo.precioTotal;
+        parts.push(`Plato criollo: ${estado.platoCriollo.item.nombre} x${estado.platoCriollo.cant} - S/ ${estado.platoCriollo.precioTotal.toFixed(2)}`);
+        estado.platoMarino = { item: null, cant: 1, precioTotal: 0 };
+      } else if (estado.platoMarino.item) {
+        estado.platoMarino.precioTotal = estado.platoMarino.item.precio * estado.platoMarino.cant;
+        total += estado.platoMarino.precioTotal;
+        parts.push(`Plato marino: ${estado.platoMarino.item.nombre} x${estado.platoMarino.cant} - S/ ${estado.platoMarino.precioTotal.toFixed(2)}`);
+      } else {
+        parts.push('Plato principal: No ordenó - S/ 0.00');
+      }
+
+      if (estado.postre.item) {
+        estado.postre.precioTotal = estado.postre.item.precio * estado.postre.cant;
+        total += estado.postre.precioTotal;
+        parts.push(`Postre: ${estado.postre.item.nombre} x${estado.postre.cant} - S/ ${estado.postre.precioTotal.toFixed(2)}`);
+      } else {
+        parts.push('Postre: No ordenó - S/ 0.00');
+      }
+
+      if (estado.bebida.item) {
+        estado.bebida.precioTotal = estado.bebida.item.precio * estado.bebida.cant;
+        total += estado.bebida.precioTotal;
+        parts.push(`Bebida: ${estado.bebida.item.nombre} x${estado.bebida.cant} - S/ ${estado.bebida.precioTotal.toFixed(2)}`);
+      } else {
+        parts.push('Bebida: No ordenó - S/ 0.00');
+      }
+
+      estado.descuento = 0;
+      if (estado.postre.item?.nombre === 'Suspiro a la Limeña' && estado.bebida.item?.nombre === 'Limonada frozen') {
+        estado.descuento = total * 0.20;
+        total -= estado.descuento;
+      }
+
+      const res = qs('#resumen');
+      res.innerHTML = `
+        <p><b>Cliente:</b> ${estado.nombre}</p>
+        <p><b>Pedido #</b> ${estado.numeroPedido}</p>
+        ${parts.map(p=>`<p>${p}</p>`).join('')}
+        ${estado.descuento>0 ? `<p class="text-green-300"><b>Descuento aplicado:</b> S/ ${estado.descuento.toFixed(2)}</p>` : ''}
+        <p class="mt-2 text-xl text-purple-200"><b>Total a pagar: S/ ${total.toFixed(2)}</b></p>
+        <p class="mt-4">Preparando tu pedido...</p>
+        <p>Por favor, espera un momento...</p>
+        <p class="mt-1">Retíralo en la zona de entrega con el número: #${estado.numeroPedido}</p>
+        <p class="mt-2">Gracias por usar SmartFood, ${estado.nombre}.</p>
+      `;
+    }
+
+    function reiniciar() {
+      estado = {
+        nombre: '',
+        combo: { item: null, cant: 1, precioTotal: 0 },
+        entrada: { item: null, precioTotal: 0 },
+        platoCriollo: { item: null, cant: 1, precioTotal: 0 },
+        platoMarino: { item: null, cant: 1, precioTotal: 0 },
+        postre: { item: null, cant: 1, precioTotal: 0 },
+        bebida: { item: null, cant: 1, precioTotal: 0 },
+        descuento: 0,
+        numeroPedido: 0
+      };
+      document.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));
+      document.querySelectorAll('input[type=number]').forEach(i=>i.value=1);
+      document.getElementById('nombre').value='';
+      showStep(0);
+    }
+
+    renderList('combosList', data.combos, 'combo');
+    renderList('entradasList', data.entradas, 'entrada');
+    renderList('criollosList', data.criollos, 'criollo');
+    renderList('marinosList', data.marinos, 'marino');
+    renderList('postresList', data.postres, 'postre');
+    renderList('bebidasList', data.bebidas, 'bebida');
+
+    const originalNext = nextStep;
+    nextStep = () => {
+      if (step === 0) {
+        estado.nombre = document.getElementById('nombre').value.trim() || '';
+      }
+      if (step === 2 && estado.combo.item) {
+        const n = Math.max(1, parseInt(document.getElementById('cantc').value||'1'));
+        estado.combo.cant = n;
+      }
+      if (step === 4) {
+        const cant = Math.max(1, parseInt(document.getElementById('cantPlato').value||'1'));
+        if (estado.platoCriollo.item) estado.platoCriollo.cant = cant;
+        if (estado.platoMarino.item) estado.platoMarino.cant = cant;
+      }
+      if (step === 5 && !document.getElementById('postresBox').classList.contains('hidden')) {
+        estado.postre.cant = Math.max(1, parseInt(document.getElementById('cantPostre').value||'1'));
+      }
+      if (step === 6 && !document.getElementById('bebidasBox').classList.contains('hidden')) {
+        estado.bebida.cant = Math.max(1, parseInt(document.getElementById('cantBebida').value||'1'));
+      }
+      originalNext();
+    };
+
+    showStep(0);
+  </script>
+</body>
+</html>
+  
