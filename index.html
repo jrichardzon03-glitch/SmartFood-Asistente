@@ -21,6 +21,28 @@
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     input[type="number"] { -moz-appearance: textfield; }
   </style>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBIN95TuXzROeqe3SQfdMudboVwMSdkOBc",
+      authDomain: "smartfoodpedidos-ba35c.firebaseapp.com",
+      databaseURL: "https://smartfoodpedidos-ba35c-default-rtdb.firebaseio.com",
+      projectId: "smartfoodpedidos-ba35c",
+      storageBucket: "smartfoodpedidos-ba35c.firebasestorage.app",
+      messagingSenderId: "298863722110",
+      appId: "1:298863722110:web:176526a15799cd5ceae22f",
+      measurementId: "G-1JTSBQVHT7"
+    };
+    const appFirebase = initializeApp(firebaseConfig);
+    const db = getDatabase(appFirebase);
+
+    window.db = db; 
+    window.push = push;
+    window.ref = ref;
+  </script>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-black via-indigo-950 to-purple-950 text-white">
   <header class="max-w-5xl mx-auto px-4 py-8 text-center">
@@ -411,6 +433,22 @@
         <p class="mt-1">Retíralo en la zona de entrega con el número: #${estado.numeroPedido}</p>
         <p class="mt-2">Gracias por usar SmartFood, ${estado.nombre}.</p>
       `;
+      // 🔥 Enviar a Firebase
+      const pedidoObj = {
+        numero: estado.numeroPedido,
+        nombre: estado.nombre,
+        items: [],
+        total: total
+      };
+      if (estado.combo.item) pedidoObj.items.push({nombre: estado.combo.item.nombre, cantidad: estado.combo.cant, precio: estado.combo.item.precio});
+      if (estado.entrada.item) pedidoObj.items.push({nombre: estado.entrada.item.nombre, cantidad: estado.entrada.cant, precio: estado.entrada.item.precio});
+      if (estado.platoCriollo.item) pedidoObj.items.push({nombre: estado.platoCriollo.item.nombre, cantidad: estado.platoCriollo.cant, precio: estado.platoCriollo.item.precio});
+      if (estado.platoMarino.item) pedidoObj.items.push({nombre: estado.platoMarino.item.nombre, cantidad: estado.platoMarino.cant, precio: estado.platoMarino.item.precio});
+      if (estado.postre.item) pedidoObj.items.push({nombre: estado.postre.item.nombre, cantidad: estado.postre.cant, precio: estado.postre.item.precio});
+      if (estado.bebida.item) pedidoObj.items.push({nombre: estado.bebida.item.nombre, cantidad: estado.bebida.cant, precio: estado.bebida.item.precio});
+
+      const pedidosRef = window.ref(window.db, "pedidos");
+      window.push(pedidosRef, pedidoObj);
     }
 
     function reiniciar() {
@@ -464,4 +502,5 @@
   </script>
 </body>
 </html>
+
   
